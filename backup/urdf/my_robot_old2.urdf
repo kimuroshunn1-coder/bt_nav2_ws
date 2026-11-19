@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<!-- asimawari.stl から作成。座標系: base_link = 左右駆動輪の車軸中点、前方 = +X、左 = +Y、上 = +Z。
+     【仮定値】駆動輪: 半径 0.05 m / 左右間隔 0.45 m / 後ろ(STLの-Y側)のユニットは受動キャスター扱い。
+     実機寸法が違う場合は下の wheel_radius / wheel_y を修正し、controllers.yaml も揃えること。 -->
+<robot name="my_robot">
+
+  <!-- 数値パラメータ(参照用。コメントの値と下の記述を一致させる) -->
+  <!-- wheel_radius=0.05  wheel_y=0.225  -->
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://my_robot_sim/meshes/body2.stl"/>
+      </geometry>
+      <material name="gray"><color rgba="0.6 0.6 0.65 1"/></material>
+    </visual>
+    <!-- 衝突形状: 本体は単純なボックス(動く物体に凹メッシュは不安定なため) -->
+    <collision>
+      <origin xyz="-0.15 0 0.065" rpy="0 0 0"/>
+      <geometry><box size="0.60 0.56 0.13"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.15 0 0.03" rpy="0 0 0"/>
+      <mass value="8.0"/>
+      <inertia ixx="0.25" ixy="0" ixz="0" iyy="0.30" iyz="0" izz="0.50"/>
+    </inertial>
+  </link>
+
+  <!-- 左車輪 (STLの x=-225mm 側) -->
+  <link name="left_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.05" length="0.04"/></geometry>
+      <material name="black"><color rgba="0.1 0.1 0.1 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.05" length="0.04"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.3"/>
+      <inertia ixx="0.0004" ixy="0" ixz="0" iyy="0.0004" iyz="0" izz="0.0004"/>
+    </inertial>
+  </link>
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <origin xyz="0 0.225 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- 右車輪 (STLの x=+225mm 側) -->
+  <link name="right_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.05" length="0.04"/></geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.05" length="0.04"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.3"/>
+      <inertia ixx="0.0004" ixy="0" ixz="0" iyy="0.0004" iyz="0" izz="0.0004"/>
+    </inertial>
+  </link>
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <origin xyz="0 -0.225 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- 後ろの受動キャスター (STLの y=-200mm → x=-0.39 m)。摩擦ゼロの球 -->
+  <link name="rear_caster">
+    <collision>
+      <geometry><sphere radius="0.02"/></geometry>
+    </collision>
+    <visual>
+      <geometry><sphere radius="0.02"/></geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+  <joint name="rear_caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="rear_caster"/>
+    <origin xyz="-0.39 0 -0.03" rpy="0 0 0"/>
+  </joint>
+  <gazebo reference="rear_caster">
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+  </gazebo>
+
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+    <joint name="left_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="right_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+  <gazebo>
+    <plugin filename="gz_ros2_control-system"
+            name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>CONTROLLERS_YAML</parameters>
+    </plugin>
+  </gazebo>
+
+</robot>

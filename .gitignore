@@ -1,0 +1,23 @@
+# ROS2 build artifacts
+build/
+install/
+log/
+
+# colcon
+.colcon/
+
+# VSCode
+.vscode/
+
+# CLion
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+# Backup
+*~
+
+# Windows ADS
+*:Zone.Identifier
