@@ -81,7 +81,7 @@ def generate_launch_description():
 
     swerve_node = Node(
         package='my_robot_sim', executable='swerve_controller.py',
-        parameters=[{'use_sim_time': True}], output='screen')
+        parameters=[{'use_sim_time': True, 'hold_steer_below': 0.01}], output='screen')
 
     load_jsb_after_spawn = RegisterEventHandler(
         OnProcessExit(target_action=spawn,

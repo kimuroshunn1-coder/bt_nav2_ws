@@ -21,12 +21,16 @@ def wrap(a):
     return math.atan2(math.sin(a), math.cos(a))
 
 
-def module_cmd(vx, vy, wz, mx, my, cur_angle):
-    """1モジュールの (操舵角, 車輪速[m/s])。回転量が少なくなる向きを選ぶ。"""
+def module_cmd(vx, vy, wz, mx, my, cur_angle, hold_below=0.0):
+    """1モジュールの (操舵角, 車輪速[m/s])。回転量が少なくなる向きを選ぶ。
+    hold_below > 0 のとき、モジュールの目標速度がこれより小さければ、操舵は動かさず、
+    いまの車輪の向きの成分だけで進む(ゴール付近の小さな指令で、操舵がばたついて止まるのを防ぐ)。"""
     ux, uy = vx - wz * my, vy + wz * mx
     speed = math.hypot(ux, uy)
     if speed < 1e-4:
         return cur_angle, 0.0
+    if speed < hold_below:
+        return cur_angle, ux * math.cos(cur_angle) + uy * math.sin(cur_angle)
     ang = math.atan2(uy, ux)
     if abs(wrap(ang - cur_angle)) > math.pi / 2:
         ang, speed = wrap(ang + math.pi), -speed
@@ -48,6 +52,7 @@ class Swerve(Node):
     def __init__(self):
         super().__init__('swerve_controller')
         self.declare_parameter('cmd_timeout', 0.5)
+        self.declare_parameter('hold_steer_below', 0.0)   # 例 0.03: 小さい指令では操舵を動かさない(0で無効)
         self.declare_parameter('publish_odom', False)   # EKFを使うので既定は出さない
         self.cmd = (0.0, 0.0, 0.0)
         self.last_cmd = self.get_clock().now()
@@ -82,7 +87,8 @@ class Swerve(Node):
         vx, vy, wz = self.cmd if fresh else (0.0, 0.0, 0.0)
         steer, wheel = [], []
         for n, mx, my in MODS:
-            a, s = module_cmd(vx, vy, wz, mx, my, self.ang[n])
+            a, s = module_cmd(vx, vy, wz, mx, my, self.ang[n],
+                              self.get_parameter('hold_steer_below').value)
             # 操舵が目標角に届くまでは車輪速度を絞る(向きが違うまま転がして滑るのを防ぐ)
             s *= max(0.0, math.cos(wrap(a - self.ang[n])))
             steer.append(a)
