@@ -87,7 +87,7 @@ controller_server:
       stateful: true
       plugin: nav2_controller::SimpleGoalChecker
       xy_goal_tolerance: 0.2
-      yaw_goal_tolerance: 0.02
+      yaw_goal_tolerance: 0.1
     FollowPath:
       plugin: nav2_mppi_controller::MPPIController
       time_steps: 40
@@ -98,9 +98,9 @@ controller_server:
       ay_max: 5.0
       ay_min: -5.0
       az_max: 15.0
-      vx_std: 0.21
-      vy_std: 0.21
-      wz_std: 0.42
+      vx_std: 0.3
+      vy_std: 0.3
+      wz_std: 0.5
       vx_max: 5.0
       vx_min: -5.0
       vy_max: 5.0
@@ -184,8 +184,8 @@ local_costmap:
       - inflation_layer
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
-        cost_scaling_factor: 4.5
-        inflation_radius: 0.55
+        cost_scaling_factor: 6.0
+        inflation_radius: 0.60
       static_layer:
         plugin: nav2_costmap_2d::StaticLayer
         map_subscribe_transient_local: true
@@ -225,8 +225,8 @@ global_costmap:
         map_subscribe_transient_local: true
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
-        cost_scaling_factor: 5.0
-        inflation_radius: 0.55
+        cost_scaling_factor: 6.0
+        inflation_radius: 0.60
       always_send_full_costmap: true
       footprint: '[[0.28, 0.30], [0.28, -0.30], [-0.10, -0.30], [-0.32, -0.08], [-0.32,
         0.08], [-0.10, 0.30]]'

@@ -95,6 +95,9 @@ def main():
         nav.setInitialPose(make_pose(nav, 0.0, 0.0, 0.0))
     nav.waitUntilNav2Active()
 
+    print('Nav2起動完了。安定待ち2秒')
+    time.sleep(0.5)
+
     nav.followWaypoints(poses)
     last, t_print = -1, 0.0
     t_start = t_prev = time.monotonic()
